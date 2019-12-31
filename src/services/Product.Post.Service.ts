@@ -8,7 +8,7 @@ const usePostStarshipService = () => {
     status: "init"
   });
 
-  const publishProduct = (product: Product) => {
+  const publishProduct = (product: Product, restOperation: string) => {
     setService({ status: "loading" });
 
     const headers = new Headers();
@@ -16,7 +16,7 @@ const usePostStarshipService = () => {
 
     return new Promise((resolve, reject) => {
       fetch(process.env.REACT_APP_BASE_URL + "/products", {
-        method: "POST",
+        method: restOperation,
         body: JSON.stringify(product),
         headers
       })

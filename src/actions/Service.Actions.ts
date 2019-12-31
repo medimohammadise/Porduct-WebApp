@@ -21,3 +21,8 @@ export type Service<T> =
   | IServiceLoading
   | IServiceLoaded<T>
   | IServiceError;
+
+export const enum RestOperation {
+  POST = "POST",
+  PUT = "PUT"
+}

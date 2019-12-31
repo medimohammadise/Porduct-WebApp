@@ -3,6 +3,7 @@ import MaterialTable, { Column } from "material-table";
 import useProductsService from "../services/Product.Service";
 import useProductsPostService from "../services/Product.Post.Service";
 import { IProduct } from "src/data/produt.model";
+import { RestOperation } from "../actions/Service.Actions";
 
 interface ITableState {
   columns: Array<Column<IProduct>>;
@@ -43,7 +44,7 @@ const ProductComponent: React.FC<{}> = () => {
                   setState(prevState => {
                     const data = [...prevState.data];
                     data.push(newData);
-                    publishProduct(newData);
+                    publishProduct(newData, RestOperation.POST);
 
                     return { ...prevState, data };
                   });
@@ -57,6 +58,7 @@ const ProductComponent: React.FC<{}> = () => {
                     setState(prevState => {
                       const data = [...prevState.data];
                       data[data.indexOf(oldData)] = newData;
+                      publishProduct(newData, RestOperation.PUT);
                       return { ...prevState, data };
                     });
                   }
