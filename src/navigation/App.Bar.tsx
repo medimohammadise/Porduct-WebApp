@@ -28,6 +28,7 @@ import { actions as MaterialActionCreators } from "../data/material";
 import { getMaterialChartItems } from "../selectors";
 import AppDrawer from "./App.Drawer";
 import ProductComponent from "../components/ProductComponent";
+import ProductCategoryComponent from "../components/ProductCategoryComponent";
 //#endregion
 
 interface IAppProps extends IApplicationProps {
@@ -209,6 +210,9 @@ class MiniDrawer extends React.Component<IAppProps, IState> {
     const ProductBoard = isAuthenticated((props: any): any => {
       return <ProductComponent />;
     });
+    const ProductCategoryBoard = isAuthenticated((props: any): any => {
+      return <ProductCategoryComponent />;
+    });
     return (
       <div className={classes.root}>
         {this.renderAppBar()}
@@ -220,6 +224,7 @@ class MiniDrawer extends React.Component<IAppProps, IState> {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/account" render={this.renderAccount} />
           <Route path="/product" component={ProductBoard} />
+          <Route path="/category" component={ProductCategoryBoard} />
           {this.renderAlert()}
           {this.renderSpinner()}
         </main>

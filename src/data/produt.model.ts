@@ -13,7 +13,7 @@ export interface IProduct {
   price?: number;
   currency?: Currency;
   // createdAt?: Moment;
-  productCategoryId?: number;
+  productCategoryId?: string;
 }
 
 export const defaultValue: Readonly<IProduct> = {};
