@@ -24,5 +24,6 @@ export type Service<T> =
 
 export const enum RestOperation {
   POST = "POST",
-  PUT = "PUT"
+  PUT = "PUT",
+  DELETE = "DELETE"
 }

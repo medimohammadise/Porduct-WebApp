@@ -44,7 +44,7 @@ const ProductComponent: React.FC<{}> = () => {
                   setState(prevState => {
                     const data = [...prevState.data];
                     data.push(newData);
-                    publishProduct(newData, RestOperation.POST);
+                    publishProduct(RestOperation.POST, newData);
 
                     return { ...prevState, data };
                   });
@@ -58,7 +58,7 @@ const ProductComponent: React.FC<{}> = () => {
                     setState(prevState => {
                       const data = [...prevState.data];
                       data[data.indexOf(oldData)] = newData;
-                      publishProduct(newData, RestOperation.PUT);
+                      publishProduct(RestOperation.PUT, newData);
                       return { ...prevState, data };
                     });
                   }
@@ -68,6 +68,7 @@ const ProductComponent: React.FC<{}> = () => {
               new Promise(resolve => {
                 setTimeout(() => {
                   resolve();
+                  publishProduct(RestOperation.DELETE, null, oldData.id);
                   setState(prevState => {
                     const data = [...prevState.data];
                     data.splice(data.indexOf(oldData), 1);
