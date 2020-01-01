@@ -3,6 +3,7 @@ export interface IProductCategory {
   code?: string;
   name?: string;
   productCategoryId?: string;
+  productCategoryIds?: IProductCategory[];
 }
 
 export const defaultValue: Readonly<IProductCategory> = {};

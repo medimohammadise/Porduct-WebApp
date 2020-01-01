@@ -1,40 +1,69 @@
 import * as React from "react";
 import MaterialTable, { Column } from "material-table";
 import useProductsService from "../services/Product.Service";
+import useProductCategoryService from "../services/ProductCategory.Service";
 import useProductsPostService from "../services/Product.Post.Service";
 import { IProduct } from "src/data/produt.model";
 import { RestOperation } from "../actions/Service.Actions";
-
+import Input from "@material-ui/core/Input";
+import Select from "@material-ui/core/Select";
 interface ITableState {
   columns: Array<Column<IProduct>>;
   data: IProduct[];
+  title: string;
 }
 const ProductComponent: React.FC<{}> = () => {
   const service = useProductsService();
   const { publishProduct } = useProductsPostService();
+  const categoryService = useProductCategoryService();
   const [state, setState] = React.useState<ITableState>({
-    columns: [
-      { title: "Code", field: "code" },
-      { title: "Description", field: "description" },
-      { title: "Price", field: "price", type: "numeric" },
-      {
-        title: "currency",
-        field: "currency"
-      },
-      {
-        title: "Category",
-        field: "productCategoryId"
-      }
-    ],
-    data: []
+    columns: [],
+    data: [],
+    title: ""
   });
 
   return (
     <>
       {service.status === "loaded" && (
         <MaterialTable
-          title="Product"
-          columns={state.columns}
+          title={state.title}
+          columns={[
+            { title: "id", field: "id" },
+            { title: "Code", field: "code" },
+            { title: "Description", field: "description" },
+            { title: "Price", field: "price", type: "numeric" },
+            {
+              title: "currency",
+              field: "currency"
+            },
+            {
+              title: "Category",
+              field: "productCategoryId",
+              editComponent: props => {
+                return (
+                  <Select
+                    native={true}
+                    defaultValue=""
+                    input={
+                      <Input
+                        id="grouped-native-select"
+                        onChange={e => props.onChange(e.target.value)}
+                      />
+                    }
+                  >
+                    <option value="" />
+
+                    <optgroup label="Category 1">
+                      {categoryService.status === "loaded" &&
+                        categoryService.payload.map((item: any) => (
+                          <option value={item.id}>{item.name}</option>
+                        ))}
+                    </optgroup>
+                  </Select>
+                );
+              }
+            }
+          ]}
           data={service.payload}
           editable={{
             onRowAdd: newData =>

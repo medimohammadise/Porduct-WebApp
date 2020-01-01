@@ -1,6 +1,6 @@
 import * as React from "react";
 import MaterialTable, { Column } from "material-table";
-import useProductsService from "../services/ProductCategory.Service";
+import useProductCategoryService from "../services/ProductCategory.Service";
 import usePostProductCategoryService from "../services/ProductCategory.Post.Service";
 import { IProductCategory } from "../data/produtCategory.model";
 import { RestOperation } from "../actions/Service.Actions";
@@ -10,7 +10,7 @@ interface ITableState {
   data: IProductCategory[];
 }
 const ProductCatgoryComponent: React.FC<{}> = () => {
-  const service = useProductsService();
+  const service = useProductCategoryService();
   const { publishProductCategory } = usePostProductCategoryService();
   const [state, setState] = React.useState<ITableState>({
     columns: [
