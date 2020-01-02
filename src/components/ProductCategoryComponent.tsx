@@ -4,32 +4,81 @@ import useProductCategoryService from "../services/ProductCategory.Service";
 import usePostProductCategoryService from "../services/ProductCategory.Post.Service";
 import { IProductCategory } from "../data/produtCategory.model";
 import { RestOperation } from "../actions/Service.Actions";
-
+import Input from "@material-ui/core/Input";
+import Select from "@material-ui/core/Select";
 interface ITableState {
   columns: Array<Column<IProductCategory>>;
   data: IProductCategory[];
+  title: string;
 }
 const ProductCatgoryComponent: React.FC<{}> = () => {
   const service = useProductCategoryService();
   const { publishProductCategory } = usePostProductCategoryService();
   const [state, setState] = React.useState<ITableState>({
-    columns: [
-      { title: "Code", field: "code" },
-      { title: "Name", field: "name" },
-      {
-        title: "Category",
-        field: "productCategoryId"
-      }
-    ],
-    data: []
+    columns: [],
+    data: [],
+    title: "Category"
   });
 
   return (
     <>
       {service.status === "loaded" && (
         <MaterialTable
-          title="Product Categories"
-          columns={state.columns}
+          title={state.title}
+          columns={[
+            { title: "Id", field: "id", hidden: true },
+            { title: "Code", field: "code" },
+            { title: "Name", field: "name" },
+            {
+              title: "Category",
+              field: "productCategoryId",
+              render: rowData => {
+                return (
+                  <Select
+                    native={true}
+                    defaultValue={rowData.productCategoryId}
+                    input={<Input id="grouped-native-select" />}
+                  >
+                    <option value="" />
+
+                    <optgroup label="Category 1">
+                      {service.status === "loaded" &&
+                        service.payload.map((item: any) => (
+                          <option value={item.id} key={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  </Select>
+                );
+              },
+              editComponent: props => {
+                return (
+                  <Select
+                    native={true}
+                    defaultValue={props.rowData.productCategoryId}
+                    input={
+                      <Input
+                        id="grouped-native-select"
+                        onChange={e => props.onChange(e.target.value)}
+                      />
+                    }
+                  >
+                    <option value="" />
+
+                    <optgroup label="Category 1">
+                      {service.status === "loaded" &&
+                        service.payload.map((item: any) => (
+                          <option value={item.id} key={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  </Select>
+                );
+              }
+            }
+          ]}
           data={service.payload}
           editable={{
             onRowAdd: newData =>

@@ -19,7 +19,7 @@ const ProductComponent: React.FC<{}> = () => {
   const [state, setState] = React.useState<ITableState>({
     columns: [],
     data: [],
-    title: ""
+    title: "Product"
   });
 
   return (
@@ -28,7 +28,7 @@ const ProductComponent: React.FC<{}> = () => {
         <MaterialTable
           title={state.title}
           columns={[
-            { title: "id", field: "id" },
+            { title: "id", field: "id", hidden: true },
             { title: "Code", field: "code" },
             { title: "Description", field: "description" },
             { title: "Price", field: "price", type: "numeric" },
@@ -39,11 +39,35 @@ const ProductComponent: React.FC<{}> = () => {
             {
               title: "Category",
               field: "productCategoryId",
+              render: rowData => {
+                return (
+                  <Select
+                    native={true}
+                    defaultValue={rowData.productCategoryId}
+                    input={<Input id="grouped-native-select" />}
+                  >
+                    <option value="" />
+
+                    <optgroup label="Category 1">
+                      {categoryService.status === "loaded" &&
+                        categoryService.payload.map((item: any) => (
+                          <option
+                            key={item.id}
+                            value={item.id}
+                            selected={item.id === rowData.productCategoryId}
+                          >
+                            {item.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  </Select>
+                );
+              },
               editComponent: props => {
                 return (
                   <Select
                     native={true}
-                    defaultValue=""
+                    defaultValue={props.rowData.productCategoryId}
                     input={
                       <Input
                         id="grouped-native-select"
@@ -56,7 +80,15 @@ const ProductComponent: React.FC<{}> = () => {
                     <optgroup label="Category 1">
                       {categoryService.status === "loaded" &&
                         categoryService.payload.map((item: any) => (
-                          <option value={item.id}>{item.name}</option>
+                          <option
+                            value={item.id}
+                            key={item.id}
+                            selected={
+                              item.id === props.rowData.productCategoryId
+                            }
+                          >
+                            {item.name}
+                          </option>
                         ))}
                     </optgroup>
                   </Select>
