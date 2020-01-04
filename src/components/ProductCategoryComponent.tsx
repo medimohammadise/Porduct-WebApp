@@ -4,8 +4,12 @@ import useProductCategoryService from "../services/ProductCategory.Service";
 import usePostProductCategoryService from "../services/ProductCategory.Post.Service";
 import { IProductCategory } from "../data/produtCategory.model";
 import { RestOperation } from "../actions/Service.Actions";
-import Input from "@material-ui/core/Input";
-import Select from "@material-ui/core/Select";
+import TreeView from "@material-ui/lab/TreeView";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import TreeItem from "@material-ui/lab/TreeItem";
+import Box from "@material-ui/core/Box";
+import Typography from "@material-ui/core/Typography";
 interface ITableState {
   columns: Array<Column<IProductCategory>>;
   data: IProductCategory[];
@@ -19,7 +23,48 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
     data: [],
     title: "Category"
   });
+  const [expanded, setExpanded] = React.useState<string[]>([]);
+  const [activeItemId, setActiveItemId] = React.useState<string[]>([]);
 
+  const handleChange = (event: React.ChangeEvent<{}>, nodes: string[]) => {
+    console.log("node toggled");
+    setExpanded(nodes);
+  };
+
+  const renderLabel = (item: any, activeNode: any) => (
+    <Box
+      display="flex"
+      onClick={event => {
+        setActiveItemId(item.id);
+        event.stopPropagation();
+        event.preventDefault();
+      }}
+    >
+      <Typography color={item.id === activeNode ? "primary" : "inherit"}>
+        {item.name}
+      </Typography>
+    </Box>
+  );
+
+  const renderItem = (item: any, activeNode: any) => {
+    return (
+      <TreeItem
+        key={item.id}
+        nodeId={item.id}
+        label={renderLabel(item, activeNode)}
+        onKeyDown={event => {
+          if (event.keyCode === 13) {
+            setActiveItemId(item.id);
+            event.stopPropagation();
+          }
+        }}
+      >
+        {item.productCategoryIds && item.productCategoryIds.length > 0
+          ? item.productCategoryIds.map(renderItem)
+          : null}
+      </TreeItem>
+    );
+  };
   return (
     <>
       {service.status === "loaded" && (
@@ -33,52 +78,79 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
               title: "Category",
               field: "productCategoryId",
               render: rowData => {
+                if (service.status === "loaded") {
+                  console.log(rowData.id);
+                  // setActiveItemId(rowData.id);
+                }
                 return (
-                  <Select
-                    native={true}
-                    defaultValue={rowData.productCategoryId}
-                    input={<Input id="grouped-native-select" />}
+                  <TreeView
+                    defaultCollapseIcon={<ExpandMoreIcon />}
+                    defaultExpandIcon={<ChevronRightIcon />}
+                    onNodeToggle={handleChange}
+                    expanded={[rowData.productCategoryId]}
                   >
-                    <option value="" />
+                    {service.status === "loaded" &&
+                      service.payload
+                        .filter((item: any) => item.productCategoryId == null)
+                        .map((item: any) => {
+                          return renderItem(item, rowData.productCategoryId);
+                        })
 
-                    <optgroup label="Category 1">
-                      {service.status === "loaded" &&
-                        service.payload.map((item: any) => (
-                          <option value={item.id} key={item.id}>
-                            {item.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </Select>
+                    /* service.payload.map(
+                        
+                       (item: any) =>
+                          item.parentCategoryId == null && (
+                            <TreeItem nodeId={item.id} label={item.name}>
+                              {item.productCategoryIds.map(
+                                (childItems: any) => (
+                                  <TreeItem
+                                    nodeId={childItems.id}
+                                    label={childItems.name}
+                                  />
+                                )
+                              )}
+                            </TreeItem>
+                          )
+                      )*/
+                    }
+                  </TreeView>
                 );
               },
               editComponent: props => {
                 return (
-                  <Select
-                    native={true}
-                    defaultValue={props.rowData.productCategoryId}
-                    input={
-                      <Input
-                        id="grouped-native-select"
-                        onChange={e => props.onChange(e.target.value)}
-                      />
-                    }
+                  <TreeView
+                    defaultCollapseIcon={<ExpandMoreIcon />}
+                    defaultExpandIcon={<ChevronRightIcon />}
+                    expanded={expanded}
+                    onNodeToggle={handleChange}
                   >
-                    <option value="" />
-
-                    <optgroup label="Category 1">
-                      {service.status === "loaded" &&
-                        service.payload.map((item: any) => (
-                          <option value={item.id} key={item.id}>
-                            {item.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </Select>
+                    {service.status === "loaded" &&
+                      service.payload
+                        .filter((item: any) => item.productCategoryId == null)
+                        .map(renderItem)
+                    /* service.payload.map(
+                        
+                       (item: any) =>
+                          item.parentCategoryId == null && (
+                            <TreeItem nodeId={item.id} label={item.name}>
+                              {item.productCategoryIds.map(
+                                (childItems: any) => (
+                                  <TreeItem
+                                    nodeId={childItems.id}
+                                    label={childItems.name}
+                                  />
+                                )
+                              )}
+                            </TreeItem>
+                          )
+                      )*/
+                    }
+                  </TreeView>
                 );
               }
             }
           ]}
+          onTreeExpandChange={(data, isExpanded) => console.log(data)}
           data={service.payload}
           editable={{
             onRowAdd: newData =>
@@ -88,6 +160,7 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
                   setState(prevState => {
                     const data = [...prevState.data];
                     data.push(newData);
+                    newData.productCategoryId = activeItemId;
                     publishProductCategory(RestOperation.POST, newData);
 
                     return { ...prevState, data };
@@ -102,6 +175,7 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
                     setState(prevState => {
                       const data = [...prevState.data];
                       data[data.indexOf(oldData)] = newData;
+                      newData.productCategoryId = activeItemId;
                       publishProductCategory(RestOperation.PUT, newData);
                       return { ...prevState, data };
                     });

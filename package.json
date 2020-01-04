@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.8.1",
     "@material-ui/icons": "^4.5.1",
+    "@material-ui/lab": "^4.0.0-alpha.38",
     "@types/immutable": "^3.8.7",
     "@types/lodash": "^4.14.119",
     "@types/moment": "^2.13.0",
