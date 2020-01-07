@@ -1,5 +1,5 @@
 // import { Moment } from "moment";
-export const enum Currency {
+export enum Currency {
   EUR = "EUR",
   USD = "USD",
   AUD = "AUD",
@@ -14,6 +14,8 @@ export interface IProduct {
   currency?: Currency;
   // createdAt?: Moment;
   productCategoryId?: string;
+  convertedValue?: number;
+  excahngeRate?: number;
 }
 
 export const defaultValue: Readonly<IProduct> = {};

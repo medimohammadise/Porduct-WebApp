@@ -3,30 +3,47 @@ import MaterialTable, { Column } from "material-table";
 import useProductsService from "../services/Product.Service";
 import useProductCategoryService from "../services/ProductCategory.Service";
 import useProductsPostService from "../services/Product.Post.Service";
-import { IProduct } from "src/data/produt.model";
+import useExchangeCurrenyService from "../services/Exchange.Service";
+import { IProduct, Currency } from "src/data/produt.model";
 import { RestOperation } from "../actions/Service.Actions";
 import Input from "@material-ui/core/Input";
 import Select from "@material-ui/core/Select";
+import StompClient from "react-stomp-client";
+import TextField from "@material-ui/core/TextField";
+import { IExchnageRate } from "src/data/rate.exchange.model";
+import FormControl from "@material-ui/core/FormControl";
 interface ITableState {
   columns: Array<Column<IProduct>>;
   data: IProduct[];
-  title: string;
+  message: any;
 }
+
 const ProductComponent: React.FC<{}> = () => {
   const service = useProductsService();
   const { publishProduct } = useProductsPostService();
   const categoryService = useProductCategoryService();
+  const { exchangeService } = useExchangeCurrenyService();
   const [state, setState] = React.useState<ITableState>({
     columns: [],
     data: [],
-    title: "Product"
+    message: ""
   });
+
+  const [currencyRate, setCurrencyRate] = React.useState<IExchnageRate>({});
+  const [selectedCurrency, setSelectedCurrency] = React.useState<string>();
+  React.useEffect(() => {
+    exchangeService("EUR", selectedCurrency, 10);
+  }, [selectedCurrency]);
+
+  React.useEffect(() => {
+    console.log(currencyRate.convertedValue);
+  }, [currencyRate]);
 
   return (
     <>
       {service.status === "loaded" && (
         <MaterialTable
-          title={state.title}
+          title="Product"
           columns={[
             { title: "id", field: "id", hidden: true },
             { title: "Code", field: "code" },
@@ -75,7 +92,7 @@ const ProductComponent: React.FC<{}> = () => {
                       />
                     }
                   >
-                    <option value="" />
+                    <option value={state.message} />
 
                     <optgroup label="Category 1">
                       {categoryService.status === "loaded" &&
@@ -92,6 +109,67 @@ const ProductComponent: React.FC<{}> = () => {
                         ))}
                     </optgroup>
                   </Select>
+                );
+              }
+            },
+            {
+              title: "To",
+
+              render: rowData => {
+                return (
+                  <FormControl>
+                    <Select
+                      native={true}
+                      input={<Input id="currencyListForExchange" />}
+                      onChange={e => {
+                        setSelectedCurrency(e.target.value as string);
+                      }}
+                    >
+                      <option key="" />
+                      {Object.keys(Currency).map(item => (
+                        <option key={item}>{item}</option>
+                      ))}
+                    </Select>
+                  </FormControl>
+                );
+              }
+            },
+            {
+              title: "Value",
+              render: rowData => {
+                return (
+                  <>
+                    <StompClient
+                      endpoint={process.env.REACT_APP_WEBSOCKET_URL}
+                      topic="topic/exchange"
+                      onMessage={message => {
+                        const newExchangeRate = JSON.parse(
+                          message.body
+                        ) as IExchnageRate;
+
+                        setCurrencyRate(newExchangeRate);
+                      }}
+                    >
+                      {currencyRate.exchangeRate > 0 && (
+                        <>
+                          <FormControl>
+                            <TextField
+                              id="standard-basic1"
+                              label="Converted value"
+                              value={currencyRate.convertedValue}
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <TextField
+                              id="standard-basic1"
+                              label="Rate"
+                              value={currencyRate.exchangeRate}
+                            />
+                          </FormControl>
+                        </>
+                      )}
+                    </StompClient>
+                  </>
                 );
               }
             }
