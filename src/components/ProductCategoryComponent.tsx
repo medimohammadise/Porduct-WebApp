@@ -77,11 +77,8 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
             {
               title: "Category",
               field: "productCategoryId",
+              type: "string",
               render: rowData => {
-                if (service.status === "loaded") {
-                  console.log(rowData.id);
-                  // setActiveItemId(rowData.id);
-                }
                 return (
                   <TreeView
                     defaultCollapseIcon={<ExpandMoreIcon />}
@@ -94,25 +91,7 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
                         .filter((item: any) => item.productCategoryId == null)
                         .map((item: any) => {
                           return renderItem(item, rowData.productCategoryId);
-                        })
-
-                    /* service.payload.map(
-                        
-                       (item: any) =>
-                          item.parentCategoryId == null && (
-                            <TreeItem nodeId={item.id} label={item.name}>
-                              {item.productCategoryIds.map(
-                                (childItems: any) => (
-                                  <TreeItem
-                                    nodeId={childItems.id}
-                                    label={childItems.name}
-                                  />
-                                )
-                              )}
-                            </TreeItem>
-                          )
-                      )*/
-                    }
+                        })}
                   </TreeView>
                 );
               },
@@ -127,30 +106,12 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
                     {service.status === "loaded" &&
                       service.payload
                         .filter((item: any) => item.productCategoryId == null)
-                        .map(renderItem)
-                    /* service.payload.map(
-                        
-                       (item: any) =>
-                          item.parentCategoryId == null && (
-                            <TreeItem nodeId={item.id} label={item.name}>
-                              {item.productCategoryIds.map(
-                                (childItems: any) => (
-                                  <TreeItem
-                                    nodeId={childItems.id}
-                                    label={childItems.name}
-                                  />
-                                )
-                              )}
-                            </TreeItem>
-                          )
-                      )*/
-                    }
+                        .map(renderItem)}
                   </TreeView>
                 );
               }
             }
           ]}
-          onTreeExpandChange={(data, isExpanded) => console.log(data)}
           data={service.payload}
           editable={{
             onRowAdd: newData =>
@@ -160,7 +121,11 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
                   setState(prevState => {
                     const data = [...prevState.data];
                     data.push(newData);
-                    newData.productCategoryId = activeItemId;
+                    if (activeItemId.length > 0) {
+                      newData.productCategoryId = activeItemId;
+                    } else {
+                      newData.productCategoryId = null;
+                    }
                     publishProductCategory(RestOperation.POST, newData);
 
                     return { ...prevState, data };
@@ -175,9 +140,13 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
                     setState(prevState => {
                       const data = [...prevState.data];
                       data[data.indexOf(oldData)] = newData;
-                      newData.productCategoryId = activeItemId;
+                      if (activeItemId.length > 0) {
+                        newData.productCategoryId = activeItemId;
+                      } else {
+                        newData.productCategoryId = null;
+                      }
                       publishProductCategory(RestOperation.PUT, newData);
-                      return { ...prevState, data };
+                      return { ...prevState, newData };
                     });
                   }
                 }, 600);
