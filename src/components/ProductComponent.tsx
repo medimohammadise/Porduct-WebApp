@@ -32,7 +32,9 @@ const ProductComponent: React.FC<{}> = () => {
   const [currencyRate, setCurrencyRate] = React.useState<IExchnageRate>({});
   const [selectedCurrency, setSelectedCurrency] = React.useState<string>();
   React.useEffect(() => {
-    exchangeService("EUR", selectedCurrency, 10);
+    if (selectedCurrency) {
+      exchangeService("EUR", selectedCurrency, 10);
+    }
   }, [selectedCurrency]);
 
   React.useEffect(() => {
