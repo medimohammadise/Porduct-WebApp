@@ -1,5 +1,7 @@
 import * as React from "react";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
+import EuroIcon from "@material-ui/icons/Euro";
+import CategoryIcon from "@material-ui/icons/Category";
+import ShopIcon from "@material-ui/icons/Shop";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import {
   Drawer,
@@ -30,12 +32,12 @@ interface IAppDrawer {
 class AppDrawer extends React.Component<IAppDrawer, {}> {
   public routes = [
     { path: "/", title: "Dashboard", icon: () => <DashboardIcon /> },
-    { path: "/category", title: "Category", icon: () => <AccountCircleIcon /> },
-    { path: "/product", title: "Product", icon: () => <AccountCircleIcon /> },
+    { path: "/category", title: "Category", icon: () => <CategoryIcon /> },
+    { path: "/product", title: "Product", icon: () => <ShopIcon /> },
     {
-      path: "/account",
-      title: "CurrncyExchange",
-      icon: () => <AccountCircleIcon />
+      path: "/currency",
+      title: "CurrencyExchange",
+      icon: () => <EuroIcon />
     }
   ];
 
