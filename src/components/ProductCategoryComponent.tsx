@@ -27,7 +27,6 @@ const ProductCatgoryComponent: React.FC<{}> = () => {
   const [activeItemId, setActiveItemId] = React.useState<string[]>([]);
 
   const handleChange = (event: React.ChangeEvent<{}>, nodes: string[]) => {
-    console.log("node toggled");
     setExpanded(nodes);
   };
 

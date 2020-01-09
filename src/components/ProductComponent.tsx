@@ -12,10 +12,17 @@ import StompClient from "react-stomp-client";
 import TextField from "@material-ui/core/TextField";
 import { IExchnageRate } from "src/data/rate.exchange.model";
 import FormControl from "@material-ui/core/FormControl";
+import TreeView from "@material-ui/lab/TreeView";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import TreeItem from "@material-ui/lab/TreeItem";
+import Box from "@material-ui/core/Box";
+import Typography from "@material-ui/core/Typography";
+
 interface ITableState {
   columns: Array<Column<IProduct>>;
   data: IProduct[];
-  message: any;
+  title: string;
 }
 
 const ProductComponent: React.FC<{}> = () => {
@@ -26,11 +33,15 @@ const ProductComponent: React.FC<{}> = () => {
   const [state, setState] = React.useState<ITableState>({
     columns: [],
     data: [],
-    message: ""
+    title: "Product"
   });
 
   const [currencyRate, setCurrencyRate] = React.useState<IExchnageRate>({});
   const [selectedCurrency, setSelectedCurrency] = React.useState<string>();
+
+  const [expanded, setExpanded] = React.useState<string[]>([]);
+  const [activeItemId, setActiveItemId] = React.useState<string[]>([]);
+
   React.useEffect(() => {
     if (selectedCurrency) {
       exchangeService("EUR", selectedCurrency, 10);
@@ -41,11 +52,50 @@ const ProductComponent: React.FC<{}> = () => {
     console.log(currencyRate.convertedValue);
   }, [currencyRate]);
 
+  const handleChange = (event: React.ChangeEvent<{}>, nodes: string[]) => {
+    setExpanded(nodes);
+  };
+
+  const renderLabel = (item: any, activeNode: any) => (
+    <Box
+      display="flex"
+      onClick={event => {
+        setActiveItemId(item.id);
+        event.stopPropagation();
+        event.preventDefault();
+      }}
+    >
+      <Typography color={item.id === activeNode ? "primary" : "inherit"}>
+        {item.name}
+      </Typography>
+    </Box>
+  );
+
+  const renderItem = (item: any, activeNode: any) => {
+    return (
+      <TreeItem
+        key={item.id}
+        nodeId={item.id}
+        label={renderLabel(item, activeNode)}
+        onKeyDown={event => {
+          if (event.keyCode === 13) {
+            setActiveItemId(item.id);
+            event.stopPropagation();
+          }
+        }}
+      >
+        {item.productCategoryIds && item.productCategoryIds.length > 0
+          ? item.productCategoryIds.map(renderItem)
+          : null}
+      </TreeItem>
+    );
+  };
+
   return (
     <>
-      {service.status === "loaded" && (
+      {service.status === "loaded" && categoryService.status === "loaded" && (
         <MaterialTable
-          title="Product"
+          title={state.title}
           columns={[
             { title: "id", field: "id", hidden: true },
             { title: "Code", field: "code" },
@@ -58,59 +108,37 @@ const ProductComponent: React.FC<{}> = () => {
             {
               title: "Category",
               field: "productCategoryId",
+              type: "string",
               render: rowData => {
                 return (
-                  <Select
-                    native={true}
-                    defaultValue={rowData.productCategoryId}
-                    input={<Input id="grouped-native-select" />}
+                  <TreeView
+                    defaultCollapseIcon={<ExpandMoreIcon />}
+                    defaultExpandIcon={<ChevronRightIcon />}
+                    onNodeToggle={handleChange}
+                    expanded={[rowData.productCategoryId]}
                   >
-                    <option value="" />
-
-                    <optgroup label="Category 1">
-                      {categoryService.status === "loaded" &&
-                        categoryService.payload.map((item: any) => (
-                          <option
-                            key={item.id}
-                            value={item.id}
-                            selected={item.id === rowData.productCategoryId}
-                          >
-                            {item.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </Select>
+                    {categoryService.status === "loaded" &&
+                      categoryService.payload
+                        .filter((item: any) => item.productCategoryId == null)
+                        .map((item: any) => {
+                          return renderItem(item, rowData.productCategoryId);
+                        })}
+                  </TreeView>
                 );
               },
               editComponent: props => {
                 return (
-                  <Select
-                    native={true}
-                    defaultValue={props.rowData.productCategoryId}
-                    input={
-                      <Input
-                        id="grouped-native-select"
-                        onChange={e => props.onChange(e.target.value)}
-                      />
-                    }
+                  <TreeView
+                    defaultCollapseIcon={<ExpandMoreIcon />}
+                    defaultExpandIcon={<ChevronRightIcon />}
+                    expanded={expanded}
+                    onNodeToggle={handleChange}
                   >
-                    <option value={state.message} />
-
-                    <optgroup label="Category 1">
-                      {categoryService.status === "loaded" &&
-                        categoryService.payload.map((item: any) => (
-                          <option
-                            value={item.id}
-                            key={item.id}
-                            selected={
-                              item.id === props.rowData.productCategoryId
-                            }
-                          >
-                            {item.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  </Select>
+                    {categoryService.status === "loaded" &&
+                      categoryService.payload
+                        .filter((item: any) => item.productCategoryId == null)
+                        .map(renderItem)}
+                  </TreeView>
                 );
               }
             },
@@ -184,6 +212,7 @@ const ProductComponent: React.FC<{}> = () => {
                   resolve();
                   setState(prevState => {
                     const data = [...prevState.data];
+                    newData.productCategoryId = activeItemId;
                     data.push(newData);
                     publishProduct(RestOperation.POST, newData);
 
@@ -199,6 +228,7 @@ const ProductComponent: React.FC<{}> = () => {
                     setState(prevState => {
                       const data = [...prevState.data];
                       data[data.indexOf(oldData)] = newData;
+                      newData.productCategoryId = activeItemId;
                       publishProduct(RestOperation.PUT, newData);
                       return { ...prevState, data };
                     });
