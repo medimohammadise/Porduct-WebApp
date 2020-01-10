@@ -103,7 +103,16 @@ const ProductComponent: React.FC<{}> = () => {
             { title: "Price", field: "price", type: "numeric" },
             {
               title: "currency",
-              field: "currency"
+              field: "currency",
+              editComponent: props => {
+                return (
+                  <Input
+                    defaultValue="EUR"
+                    value={props.rowData.currency}
+                    readOnly={true}
+                  />
+                );
+              }
             },
             {
               title: "Category",
@@ -214,6 +223,7 @@ const ProductComponent: React.FC<{}> = () => {
                     const data = [...prevState.data];
                     newData.productCategoryId = activeItemId;
                     data.push(newData);
+                    newData.currency = Currency.EUR;
                     publishProduct(RestOperation.POST, newData);
 
                     return { ...prevState, data };
@@ -229,6 +239,7 @@ const ProductComponent: React.FC<{}> = () => {
                       const data = [...prevState.data];
                       data[data.indexOf(oldData)] = newData;
                       newData.productCategoryId = activeItemId;
+                      newData.currency = Currency.EUR;
                       publishProduct(RestOperation.PUT, newData);
                       return { ...prevState, data };
                     });
